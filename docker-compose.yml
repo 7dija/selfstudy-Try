@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+
+  prefect-server:
+    image: prefecthq/prefect:3-latest
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+
+  worker:
+    image: prefecthq/prefect:3-latest
+    command: prefect worker start --pool default
+    depends_on:
+      - prefect-server
+    environment:
+      PREFECT_API_URL: http://prefect-server:4200/api
+
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: telecom_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build: .
+    depends_on:
+      - mysql
+      - prefect-server
+    environment:
+      PREFECT_API_URL: http://prefect-server:4200/api
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: 1234
+      DB_NAME: telecom_db
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  mysql_data:
+      

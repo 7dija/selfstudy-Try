@@ -1,0 +1,6 @@
+pandas
+openpyxl
+sqlalchemy
+pymysql
+python-dotenv
+prefect>=3.0.0
